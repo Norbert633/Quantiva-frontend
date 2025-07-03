@@ -1,42 +1,31 @@
-const BACKEND_URL = "https://quantiva-backend.onrender.com";
+// 🧠 Function to ask QBot a question
+async function askQBot(question) {
+  const response = await fetch("https://eozflslbwks0pha.m.pipedream.net", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ question })
+  });
 
-async function uploadChart() {
-  const input = document.getElementById("chartInput");
-  const file = input.files[0];
-  if (!file) return alert("Please select a chart image.");
+  const data = await response.json();
 
-  const formData = new FormData();
-  formData.append("file", file);
-
-  document.getElementById("chartResult").innerText = "Scanning...";
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/scan`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    document.getElementById("chartResult").innerText = JSON.stringify(data, null, 2);
-  } catch (err) {
-    document.getElementById("chartResult").innerText = "Scan failed.";
-  }
+  // ✅ Return the response from QBot
+  return data.answer || "Sorry, I couldn't get an answer.";
 }
 
-async function askQBot() {
-  const question = document.getElementById("qbotInput").value;
-  if (!question.trim()) return;
+// 💬 Example usage: asking the bot when user submits a question
+document.getElementById("ask-btn").addEventListener("click", async () => {
+  const input = document.getElementById("question").value;
+  const answerBox = document.getElementById("qbot-answer");
 
-  document.getElementById("qbotAnswer").innerText = "Thinking...";
+  answerBox.textContent = "QBot is thinking...";
 
   try {
-    const res = await fetch(`${BACKEND_URL}/qbot`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
-    });
-    const data = await res.json();
-    document.getElementById("qbotAnswer").innerText = data.answer || "No answer returned.";
-  } catch (err) {
-    document.getElementById("qbotAnswer").innerText = "QBot failed to respond.";
+    const answer = await askQBot(input);
+    answerBox.textContent = answer;
+  } catch (error) {
+    answerBox.textContent = "QBot failed to respond. Please try again.";
+    console.error(error);
   }
-}
+});
